@@ -1,0 +1,15 @@
+!SESSION 2025-01-16 19:38:50.223 -----------------------------------------------
+eclipse.buildId=unknown
+java.version=1.8.0_144
+java.vendor=Oracle Corporation
+BootLoader constants: OS=win32, ARCH=x86, WS=win32, NL=zh_CN
+Command-line arguments:  -os win32 -ws win32 -arch x86
+
+!ENTRY org.eclipse.ui 2 2 2025-01-16 19:39:15.686
+!MESSAGE Invalid preference category path: com.android.ide.eclipse.preferences.main (bundle: com.android.ide.eclipse.base, page: com.android.ide.eclipse.common.preferences.UsagePreferencePage)
+
+!ENTRY org.eclipse.ui 2 2 2025-01-16 19:39:15.696
+!MESSAGE Invalid preference category path: com.android.ide.eclipse.preferences.main (bundle: com.android.ide.eclipse.ddms, page: com.android.ide.eclipse.ddms.preferences.PreferencePage)
+
+!ENTRY org.eclipse.ui 2 2 2025-01-16 19:39:15.700
+!MESSAGE Invalid preference category path: com.android.ide.eclipse.preferences.main (bundle: com.android.ide.eclipse.ddms, page: com.android.ide.eclipse.ddms.preferences.LogCatPreferencePage)
