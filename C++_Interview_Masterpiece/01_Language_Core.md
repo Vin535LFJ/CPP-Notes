@@ -56,7 +56,7 @@ void byRef(int& r) { r = 42; }
 > ret
 > ```
 >
-> **结论**：引用在底层就是指针，只是编译器帮你自动解引用了。这也是为什么引用必须初始化 —— 本质上是"const 指针"（`T* const`）。
+> **结论**：在常见 ABI/优化级别下，引用参数通常以地址形式传递，因此可能和指针生成非常相似甚至相同的汇编。但 ISO C++ 语义上，引用是对象/函数的**别名**，不是一个 `T* const` 对象；编译器也可以把引用完全优化掉。可以把“像 const 指针一样不可重绑定”作为有限类比，但不要把它当成标准保证。
 
 ### 1.3 面试官连环追问 🎯
 
@@ -1062,7 +1062,7 @@ auto make_noexcept_wrapper(F&& f)
 
 > **Q3**：如果 `is_nothrow_move_constructible_v<T>` 为 true 但移动构造实际抛了异常，会发生什么？
 >
-> **回答**：这是 UB（实际上等同于违反了 noexcept 承诺）。C++ 标准规定：如果一个 `noexcept` 函数抛出了异常，`std::terminate()` 会被调用。编译器可能会省略生成回退路径的代码（假设 noexcept 真的不抛），因此异常发生时栈展开可能不完整，资源泄漏不可避免。这就是为什么 `noexcept` 不能乱加——必须是真正的无抛异常保证。
+> **回答**：这不是普通的异常传播路径，也不应称为 UB。C++ 标准规定：如果异常试图离开一个 `noexcept` 函数，会调用 `std::terminate()` 终止程序。编译器和标准库会把 `noexcept` 当作强承诺使用（例如 `vector` 扩容时决定移动还是拷贝），所以 `noexcept` 不能乱加——必须是真正的无抛异常保证。
 
 ---
 
@@ -1366,11 +1366,11 @@ sp->~string();
 
 void* operator new(size_t size, void* ptr) noexcept { return ptr; }
 
-// 配对的 placement delete —— 仅在构造失败时被编译器调用
-void operator delete(void* ptr, void* place) noexcept {
-    // 通常什么都不做（因为是 placement，内存不由 operator new 管理）
-    // 但你必须定义它！否则构造失败时编译器找不到对应的 delete
-}
+// 标准库已经声明了与标准 placement new 匹配的 placement delete：
+//   void operator delete(void*, void*) noexcept;
+// 用户通常不应重新定义这个全局标准形式。
+// 只有当你定义了“带额外参数的自定义 placement new”时，
+// 才需要提供签名匹配的 placement delete，以便构造函数抛异常时回收资源。
 
 // 完整配对示例
 void* operator new(size_t size, std::ostream& log) {
@@ -1402,9 +1402,10 @@ struct Widget {
 // C++14 之前：operator delete 不知道释放的内存大小
 void operator delete(void* ptr) noexcept;
 
-// C++14 起：sized deallocation —— 编译器传递 size 参数
+// C++14 起：允许提供 sized deallocation 重载。
+// 实现/编译选项/重载集合会影响最终是否选择该重载，不能教学成“总会传 size”。
 void operator delete(void* ptr, size_t size) noexcept;
-// 优势：分配器可以利用 size 做更高效的回收（如按大小分类的自由链表）
+// 优势：一旦实现选择该重载，分配器可以利用 size 做更高效的回收（如按大小分类的自由链表）
 
 // 配对示例
 void* operator new(size_t size) {

@@ -70,13 +70,13 @@ export ASAN_SYMBOLIZER_PATH=/usr/bin/llvm-symbolizer  # 更好的符号化
 
 ```bash
 # UBSan 检测的 UB 类型：
-# - 整数溢出 (signed/unsigned)
+# - 有符号整数溢出（signed overflow 是 UB；unsigned wrap-around 是已定义的模运算，某些 sanitizer 可作为额外 bug pattern 检查）
 # - 除零
 # - 非对齐访问
 # - 空指针解引用
 # - 越界数组访问
 # - 非法类型转换 (如错误的 dynamic_cast)
-# - 使用未初始化变量
+# - 部分未定义操作；未初始化读取通常需要 MemorySanitizer/Valgrind 或编译器诊断，不应归为 UBSan 的稳定覆盖范围
 # - 移位溢出 (shift 超出位数)
 # - 函数返回局部变量的引用
 
